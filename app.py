@@ -107,12 +107,13 @@ with tab_operacoes:
         st.error(f"Não foi possível conectar à API de Operações: {e}")
 
 
+
 # =========================================================================
-# 2. MICROSSERVIÇO DE INTERAÇÕES (MongoDB)
+# 2. MICROSSERVIÇO DE INTERAÇÕES (Com Tabela, Filtros e Gráficos)
 # =========================================================================
 with tab_interacoes:
     st.header("Serviço de Interações")
-    st.info("Dados consumidos da rota de logs do microsserviço NoSQL.")
+    st.info("Análise dinâmica dos logs de cliques e perfil de usuários do microsserviço NoSQL.")
 
     URL_API_INTERACOES = "https://microservico-interacoes.vercel.app/interacoes"
 
@@ -121,13 +122,99 @@ with tab_interacoes:
             resposta_int = requests.get(URL_API_INTERACOES, timeout=10)
             
         if resposta_int.status_code == 200:
-            df_interacoes = pd.DataFrame(resposta_int.json())
-            st.dataframe(df_interacoes, use_container_width=True)
-            st.success(f"Dados carregados: {len(df_interacoes)} documentos encontrados.")
+            json_completo = resposta_int.json()
+            
+            # Extrai a lista de documentos da chave 'dados'
+            if isinstance(json_completo, dict) and "dados" in json_completo:
+                lista_documentos = json_completo["dados"]
+            else:
+                lista_documentos = json_completo
+
+            # Criamos o DataFrame base
+            df_int = pd.DataFrame(lista_documentos)
+            
+            if not df_int.empty:
+                # --- SEÇÃO DE FILTROS NA SIDEBAR ---
+                st.sidebar.markdown("---")
+                st.sidebar.header("🖱️ Filtros de Interações")
+                
+                # 1. Filtro por Classificação (Ouro, Prata, etc)
+                col_classif = 'status_classificacao' if 'status_classificacao' in df_int.columns else None
+                if col_classif:
+                    lista_classif = ["Todas"] + sorted(df_int[col_classif].dropna().unique().tolist())
+                    classif_selecionada = st.sidebar.selectbox("Filtrar por Classificação:", lista_classif)
+                
+                # 2. Filtro por Anúncio Específico
+                # Para filtrar por anúncio dentro de uma lista, precisamos descobrir todos os anúncios únicos existentes
+                todos_anuncios = []
+                if 'anuncios_clicados' in df_int.columns:
+                    for lista in df_int['anuncios_clicados'].dropna():
+                        if isinstance(lista, list):
+                            todos_anuncios.extend(lista)
+                todos_anuncios = ["Todos"] + sorted(list(set(todos_anuncios)))
+                anuncio_selecionado = st.sidebar.selectbox("Filtrar por Anúncio Clicado:", todos_anuncios)
+                
+                # --- APLICANDO OS FILTROS NO DATAFRAME ---
+                df_int_filtrado = df_int.copy()
+                
+                if col_classif and classif_selecionada != "Todas":
+                    df_int_filtrado = df_int_filtrado[df_int_filtrado[col_classif] == classif_selecionada]
+                    
+                if anuncio_selecionado != "Todos" and 'anuncios_clicados' in df_int_filtrado.columns:
+                    # Filtra linhas onde o anúncio selecionado está dentro do array de cliques
+                    df_int_filtrado = df_int_filtrado[df_int_filtrado['anuncios_clicados'].apply(
+                        lambda x: anuncio_selecionado in x if isinstance(x, list) else False
+                    )]
+
+                # --- SEÇÃO DE GRÁFICOS ---
+                st.subheader("📊 Análise Visual de Cliques")
+                
+                # Vamos gerar um gráfico que conta o total de cliques agrupado por Classificação
+                if 'anuncios_clicados' in df_int_filtrado.columns and col_classif:
+                    # Explode o array do Mongo para que cada clique vire uma linha, permitindo contar certinho
+                    df_explodido = df_int_filtrado.explode('anuncios_clicados')
+                    
+                    col_g1, col_g2 = st.columns(2)
+                    
+                    with col_g1:
+                        st.write("**Total de Cliques por Classificação do Usuário**")
+                        df_contagem = df_explodido.groupby(col_classif).size().reset_index(name='Total de Cliques')
+                        st.bar_chart(data=df_contagem, x=col_classif, y='Total de Cliques', color="#ff7f0e")
+                        
+                    with col_g2:
+                        st.write("**Anúncios Mais Clicados (Volume por Código)**")
+                        df_anuncios_relev = df_explodido.groupby('anuncios_clicados').size().reset_index(name='Cliques')
+                        st.bar_chart(data=df_anuncios_relev, x='anuncios_clicados', y='Cliques', color="#9467bd")
+                else:
+                    st.warning("Colunas necessárias para os gráficos não encontradas.")
+
+                # --- TRATAMENTO ESTÉTICO PARA A TABELA DETALHADA ---
+                # Transformamos a lista em texto apenas para exibição na tabela (o gráfico usou a lista real)
+                df_tabela = df_int_filtrado.copy()
+                if 'anuncios_clicados' in df_tabela.columns:
+                    df_tabela['anuncios_clicados'] = df_tabela['anuncios_clicados'].apply(
+                        lambda x: ", ".join(x) if isinstance(x, list) else x
+                    )
+                
+                mapeamento_colunas = {
+                    "_id": "ID do Cliente (Mongo)",
+                    "nome_completo": "Nome do Usuário",
+                    "anuncios_clicados": "Anúncios Clicados",
+                    "status_classificacao": "Classificação"
+                }
+                colunas_existentes = {k: v for k, v in mapeamento_colunas.items() if k in df_tabela.columns}
+                df_tabela = df_tabela.rename(columns=colunas_existentes)
+                
+                # Exibe a tabela tratada e filtrada abaixo dos gráficos
+                st.subheader("📋 Dados Detalhados Filtrados")
+                st.dataframe(df_tabela, use_container_width=True)
+                st.success(f"Dados filtrados com sucesso: {len(df_tabela)} usuários correspondem aos critérios.")
+            else:
+                st.warning("Nenhum dado retornado da coleção de Interações.")
         else:
             st.error(f"Erro na API de Interações: Status {resposta_int.status_code}")
     except Exception as e:
-        st.error(f"Não foi possível conectar à API de Interações: {e}")
+        st.error(f"Não foi possível processar a API de Interações: {e}")
 
 
 # =========================================================================
