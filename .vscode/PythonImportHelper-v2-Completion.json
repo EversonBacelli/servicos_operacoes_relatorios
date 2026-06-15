@@ -1,0 +1,110 @@
+[
+    {
+        "label": "streamlit",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "streamlit",
+        "description": "streamlit",
+        "detail": "streamlit",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "requests",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "requests",
+        "description": "requests",
+        "detail": "requests",
+        "documentation": {}
+    },
+    {
+        "label": "matplotlib.pyplot",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "matplotlib.pyplot",
+        "description": "matplotlib.pyplot",
+        "detail": "matplotlib.pyplot",
+        "documentation": {}
+    },
+    {
+        "label": "seaborn",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "seaborn",
+        "description": "seaborn",
+        "detail": "seaborn",
+        "documentation": {}
+    },
+    {
+        "label": "plotly.express",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "plotly.express",
+        "description": "plotly.express",
+        "detail": "plotly.express",
+        "documentation": {}
+    },
+    {
+        "label": "URL_API_OPERACOES",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "URL_API_OPERACOES = \"https://back-operacoes.vercel.app/pedido\"\nURL_API_INTERACOES = \"https://microservico-interacoes.vercel.app/interacoes\"\nURL_API_MATRIZ = \"https://matriz-correlacao.vercel.app/\"\n# Inicialização dos DataFrames globais\ndf_op = pd.DataFrame()\ndf_int = pd.DataFrame()\ndf_matriz = pd.DataFrame()\n# =========================================================================\n# CARREGAMENTO CENTRALIZADO DE DADOS (Garante persistência entre as abas)\n# =========================================================================",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "URL_API_INTERACOES",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "URL_API_INTERACOES = \"https://microservico-interacoes.vercel.app/interacoes\"\nURL_API_MATRIZ = \"https://matriz-correlacao.vercel.app/\"\n# Inicialização dos DataFrames globais\ndf_op = pd.DataFrame()\ndf_int = pd.DataFrame()\ndf_matriz = pd.DataFrame()\n# =========================================================================\n# CARREGAMENTO CENTRALIZADO DE DADOS (Garante persistência entre as abas)\n# =========================================================================\nwith st.spinner(\"Sincronizando ecossistema de microsserviços...\"):",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "URL_API_MATRIZ",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "URL_API_MATRIZ = \"https://matriz-correlacao.vercel.app/\"\n# Inicialização dos DataFrames globais\ndf_op = pd.DataFrame()\ndf_int = pd.DataFrame()\ndf_matriz = pd.DataFrame()\n# =========================================================================\n# CARREGAMENTO CENTRALIZADO DE DADOS (Garante persistência entre as abas)\n# =========================================================================\nwith st.spinner(\"Sincronizando ecossistema de microsserviços...\"):\n    # Carga: Operações",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "df_op",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "df_op = pd.DataFrame()\ndf_int = pd.DataFrame()\ndf_matriz = pd.DataFrame()\n# =========================================================================\n# CARREGAMENTO CENTRALIZADO DE DADOS (Garante persistência entre as abas)\n# =========================================================================\nwith st.spinner(\"Sincronizando ecossistema de microsserviços...\"):\n    # Carga: Operações\n    try:\n        res = requests.get(URL_API_OPERACOES, timeout=10)",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "df_int",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "df_int = pd.DataFrame()\ndf_matriz = pd.DataFrame()\n# =========================================================================\n# CARREGAMENTO CENTRALIZADO DE DADOS (Garante persistência entre as abas)\n# =========================================================================\nwith st.spinner(\"Sincronizando ecossistema de microsserviços...\"):\n    # Carga: Operações\n    try:\n        res = requests.get(URL_API_OPERACOES, timeout=10)\n        if res.status_code == 200:",
+        "detail": "app",
+        "documentation": {}
+    },
+    {
+        "label": "df_matriz",
+        "kind": 5,
+        "importPath": "app",
+        "description": "app",
+        "peekOfCode": "df_matriz = pd.DataFrame()\n# =========================================================================\n# CARREGAMENTO CENTRALIZADO DE DADOS (Garante persistência entre as abas)\n# =========================================================================\nwith st.spinner(\"Sincronizando ecossistema de microsserviços...\"):\n    # Carga: Operações\n    try:\n        res = requests.get(URL_API_OPERACOES, timeout=10)\n        if res.status_code == 200:\n            df_op = pd.DataFrame(res.json())",
+        "detail": "app",
+        "documentation": {}
+    }
+]
